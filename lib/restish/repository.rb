@@ -69,6 +69,10 @@ module Restish
       end
     end
 
+    def post(id, action)
+      adapter(model_class).post(id, action)
+    end
+
     protected
 
     def model_class

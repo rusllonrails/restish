@@ -41,6 +41,11 @@ module Restish
       handle_and_unpack_response(response, 201)
     end
 
+    def post(id, action)
+      response = connection.post url_for("#{id}/#{action}")
+      handle_and_unpack_response(response, 201)
+    end
+
     # Figure out the url for given scope.
     #
     # The scope can either be :all if you want the URL for all records or any
