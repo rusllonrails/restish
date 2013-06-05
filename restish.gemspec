@@ -7,9 +7,9 @@ Gem::Specification.new do |spec|
   spec.name          = "restish"
   spec.version       = Restish::VERSION
   spec.authors       = ["Jiří Zajpt"]
-  spec.email         = ["jzajpt@blueberry.cz"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.email         = ["jirizajpt@buddybet.cz"]
+  spec.description   = %q{Restish is a REST client library}
+  spec.summary       = %q{Restish is a REST client library}
   spec.homepage      = ""
   spec.license       = "MIT"
 
@@ -22,8 +22,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec', '~> 2.8'
   spec.add_development_dependency 'rack-test'
-  spec.add_dependency "activesupport"
-  spec.add_dependency "activemodel"
+  spec.add_dependency 'activesupport'
+  spec.add_dependency 'activemodel'
   spec.add_dependency 'hashie'
   spec.add_dependency 'faraday'
   spec.add_dependency 'faraday_middleware'

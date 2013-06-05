@@ -4,7 +4,7 @@ require 'active_support/inflector'
 module Restish
   class Adapter
     attr_accessor :connection
-    
+
     def initialize(connection)
       @connection = connection
       @meta = nil
@@ -27,9 +27,15 @@ module Restish
     def all(options = {})
       url = options[:url] || url_for(:all)
       response = connection.get url
-      Collection.new(handle_and_unpack_response(response, 200)).meta_params(@meta)
+      collection = Collection.new(handle_and_unpack_response(response, 200))
+      collection.meta_params = @meta if @meta
+      collection
     end
 
+    # Creates the model on the server.
+    #
+    # @param [Restish::Model] model
+    # @return [Restish::Model]
     def create(model)
       response = connection.post url_for(:all), model.to_json
       handle_and_unpack_response(response, 201)
@@ -126,8 +132,12 @@ module Restish
       raise "Unable to unpack model attributes from #{response_body}!"
     end
 
+    # Unpacks metadata from response body hash.
+    #
+    # @param [Hash] response_body
+    # @return [Hash]
     def unpack_meta(response_body)
-      response_body["meta"] if response_body.has_key?("meta")
+      response_body['meta'] if response_body.has_key?('meta')
     end
 
   end
