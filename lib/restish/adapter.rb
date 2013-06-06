@@ -14,8 +14,9 @@ module Restish
     #
     # @param [Fixnum, String] id The record ID
     # @return [Object] The instance of model class
-    def find(id)
-      response = connection.get url_for(id)
+    def find(id, options = {})
+      url = options[:url] || url_for(id)
+      response = connection.get url
       handle_and_unpack_response(response, 200)
     end
 
