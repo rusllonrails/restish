@@ -59,6 +59,7 @@ module Restish
       end
     end
 
+    # FIXME Add documentation
     def save(model)
       adapter(model_name).create(model)
     end

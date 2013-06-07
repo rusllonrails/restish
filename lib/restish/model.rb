@@ -43,6 +43,7 @@ module Restish
 
     # Instance methods
 
+    # FIXME Add documentation
     def save
       self.class.save(self)
     end
