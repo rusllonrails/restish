@@ -147,5 +147,14 @@ describe Restish::Repository do
       end
     end
   end
+
+  pending '#save' do
+    let(:test_adapter) { mock 'TestAdapter' }
+    it "creates not persisted record" do
+      TestRepository.should_receive(:adapter).and_return(test_adapter)
+      test_adapter.should_receive(:create)
+      TestRepository.save(TestModel.new)
+    end
+  end
 end
 

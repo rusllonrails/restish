@@ -43,6 +43,10 @@ module Restish
 
     # Instance methods
 
+    def save
+      self.class.save(self)
+    end
+
     # Is the record persisted? This methods is required by ActiveModel.
     #
     # @return [true, false]

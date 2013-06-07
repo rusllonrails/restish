@@ -59,6 +59,10 @@ module Restish
       end
     end
 
+    def save(model)
+      adapter(model_name).create(model)
+    end
+
     # Filter all records with query.
     #
     # @param [Hash] query

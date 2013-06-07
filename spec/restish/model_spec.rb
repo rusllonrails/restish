@@ -1,8 +1,15 @@
 require 'spec_helper'
 
 module TheTestModelRepository
+  include Restish::Repository
   def foo
     'bar'
+  end
+end
+
+class TheTestModelAdapter < Restish::Adapter
+  def create(model)
+    model.id = 3
   end
 end
 
@@ -27,5 +34,10 @@ describe Restish::Model do
 
   it "contains error messages" do
     TheTestModel.new.errors.should be_kind_of(ActiveModel::Errors)
+  end
+
+  it "can be saved" do
+    model = TheTestModel.new
+    expect { model.save }.to change { model.persisted? }
   end
 end
