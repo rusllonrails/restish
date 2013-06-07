@@ -24,4 +24,8 @@ describe Restish::Model do
   it "extends the model class with repository" do
     DaTestModel.should be_kind_of(Restish::Repository)
   end
+
+  it "contains error messages" do
+    TheTestModel.new.errors.should be_kind_of(ActiveModel::Errors)
+  end
 end

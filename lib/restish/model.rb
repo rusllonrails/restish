@@ -1,4 +1,5 @@
 require 'active_model/naming'
+require 'active_model/errors'
 require 'hashie/mash'
 require 'restish/repository'
 
@@ -6,6 +7,22 @@ module Restish
   # This is the base class for all models.
   class Model < Hashie::Mash
     extend ActiveModel::Naming
+
+    attr_accessor :errors
+
+    # Converts +source_hash+ into +Model+ attributes.
+    # @see Hashie::Mash.new
+    #
+    # @param [Hash] source_hash Hash of model attributes.
+    # @param [Object] default Default attribute value.
+    # @yield [Hash, String] Gives hash and key name to the block
+    #   returning default value.
+    #
+    # @return [Model]
+    def initialize(source_hash = nil, default = nil, &blk)
+      super
+      @errors = ActiveModel::Errors.new(self)
+    end
 
     # Class methods
 
