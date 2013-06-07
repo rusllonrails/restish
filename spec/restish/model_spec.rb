@@ -39,5 +39,6 @@ describe Restish::Model do
   it "can be saved" do
     model = TheTestModel.new
     expect { model.save }.to change { model.persisted? }
+    model.save.should eq true
   end
 end

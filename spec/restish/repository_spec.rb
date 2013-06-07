@@ -153,7 +153,8 @@ describe Restish::Repository do
     it "creates not persisted record" do
       TestRepository.should_receive(:adapter).and_return(test_adapter)
       test_adapter.should_receive(:create)
-      TestRepository.save(TestModel.new)
+      result = TestRepository.save(TestModel.new)
+      result.should eq true
     end
   end
 end

@@ -62,6 +62,7 @@ module Restish
     # FIXME Add documentation
     def save(model)
       adapter(model_name).create(model)
+      true
     end
 
     # Filter all records with query.
