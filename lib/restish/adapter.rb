@@ -5,6 +5,36 @@ module Restish
   class Adapter
     attr_accessor :connection
 
+    # General connection error. Saves +response+ for futher handling.
+    class ResponseError < StandardError
+      attr_reader :response
+
+      # Creates new instance of +ResponseError+.
+      #
+      # @param [Faraday::Response] response Data returned from the server.
+      # @param [String] message Error message.
+      def initialize(response, message = nil)
+        @response = response 
+        @message = message
+      end
+
+      def to_s
+        m = "Server returned unhandled status #{@response.status}"
+        m << ": #{@message}" unless @message.blank?
+        m
+      end
+    end
+
+    # Raised on 422 Unprocessable Entity.
+    class UnprocessableEntityError < ResponseError
+      
+      # Returns hash of error messages.
+      # @return [Hash]
+      def errors
+        response.body['errors'] || {}
+      end
+    end
+
     def initialize(connection)
       @connection = connection
       @meta = nil
@@ -93,7 +123,12 @@ module Restish
       if response.status == handled_status
         block.call(response)
       else
-        raise "Server returned unhandled status #{response.status}"
+        case response.status
+        when 422
+          raise UnprocessableEntityError.new(response)
+        else
+          raise "Server returned unhandled status #{response.status}"
+        end
       end
     end
 

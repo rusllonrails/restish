@@ -33,7 +33,7 @@ describe Restish::Model do
   end
 
   it "contains error messages" do
-    TheTestModel.new.errors.should be_kind_of(ActiveModel::Errors)
+    TheTestModel.new.errors.should be_a(Restish::Errors)
   end
 
   it "can be saved" do

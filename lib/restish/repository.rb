@@ -59,10 +59,18 @@ module Restish
       end
     end
 
-    # FIXME Add documentation
+    # Creates a new +model+ by making +POST+ request to a remote
+    # service, and handles errors emitted by {Restish::Adapter}.
+    # @see Restish::Adapter
+    #
+    # @param [Model] model An instance to save.
+    # @return [Boolean] +true+ - success, +false+ - error.
     def save(model)
-      adapter(model_name).create(model)
+      adapter(model_class).create(model)
       true
+    rescue Restish::Adapter::UnprocessableEntityError => e
+      model.errors.from_hash(e.errors)
+      false
     end
 
     # Filter all records with query.

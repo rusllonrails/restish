@@ -1,7 +1,7 @@
 require 'active_model/naming'
-require 'active_model/errors'
 require 'hashie/mash'
 require 'restish/repository'
+require 'restish/errors'
 
 module Restish
   # This is the base class for all models.
@@ -21,7 +21,7 @@ module Restish
     # @return [Model]
     def initialize(source_hash = nil, default = nil, &blk)
       super
-      @errors = ActiveModel::Errors.new(self)
+      @errors = Restish::Errors.new(self)
     end
 
     # Class methods
@@ -43,7 +43,9 @@ module Restish
 
     # Instance methods
 
-    # FIXME Add documentation
+    # Saves a resource, currently only creating new records by a +POST+
+    # request. Delegates to an instance of +Restish::Repository+.
+    # @see Restish::Repository#save
     def save
       self.class.save(self)
     end

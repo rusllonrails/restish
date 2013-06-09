@@ -116,6 +116,13 @@ describe Restish::Adapter do
         foobar_adapter.create(model).should be_kind_of Foobar
       end
     end
+
+    context '422 Unprocessable Entity response' do
+      let(:response) { mock 'Response', body: json, status: 422 }
+      it 'raises an exception' do
+        expect { foobar_adapter.create(model) }.to raise_error(Restish::Adapter::UnprocessableEntityError)
+      end
+    end
   end
 
   describe '#url_for' do
