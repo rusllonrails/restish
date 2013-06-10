@@ -10,6 +10,7 @@ end
 class TheTestModelAdapter < Restish::Adapter
   def create(model)
     model.id = 3
+    model
   end
 end
 
