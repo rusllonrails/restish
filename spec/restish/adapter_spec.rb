@@ -147,4 +147,16 @@ describe Restish::Adapter do
       end
     end
   end
+
+  context '#handle_response' do
+    let (:connection) { mock 'Connection' }
+    let (:adapter) { Foo::BarAdapter.new(connection) }
+
+    it 'raises UnauthorizedError on 401 Unauthorized' do
+      connection.stub(:post).and_return(mock('Response', status: 401))
+      expect do
+        adapter.create(Foobar.new)
+      end.to raise_error(Restish::Adapter::UnauthorizedError)
+    end
+  end
 end

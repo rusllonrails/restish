@@ -35,6 +35,9 @@ module Restish
       end
     end
 
+    # Raise on 401 Unauthorized.
+    UnauthorizedError = Class.new(ResponseError)
+
     def initialize(connection)
       @connection = connection
       @meta = nil
@@ -126,6 +129,8 @@ module Restish
         case response.status
         when 422
           raise UnprocessableEntityError.new(response)
+        when 401
+          raise UnauthorizedError.new(response)
         else
           raise "Server returned unhandled status #{response.status}"
         end
