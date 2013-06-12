@@ -116,6 +116,13 @@ describe Restish::Adapter do
         foobar_adapter.create(model).should be_kind_of Foobar
       end
     end
+
+    context '422 Unprocessable Entity response' do
+      let(:response) { mock 'Response', body: json, status: 422 }
+      it 'raises an exception' do
+        expect { foobar_adapter.create(model) }.to raise_error(Restish::Adapter::UnprocessableEntityError)
+      end
+    end
   end
 
   describe '#url_for' do
@@ -138,6 +145,18 @@ describe Restish::Adapter do
         adapter = Foo::BarAdapter.new(nil)
         adapter.url_for(123).should eq 'foo/bars/123'
       end
+    end
+  end
+
+  context '#handle_response' do
+    let (:connection) { mock 'Connection' }
+    let (:adapter) { Foo::BarAdapter.new(connection) }
+
+    it 'raises UnauthorizedError on 401 Unauthorized' do
+      connection.stub(:post).and_return(mock('Response', status: 401))
+      expect do
+        adapter.create(Foobar.new)
+      end.to raise_error(Restish::Adapter::UnauthorizedError)
     end
   end
 end

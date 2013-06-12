@@ -5,8 +5,7 @@ class TestRepository
   extend Restish::Repository
 end
 
-class TestModel
-  extend Restish::Repository
+class TestModel < Restish::Model
 end
 
 describe Restish::Repository do
@@ -144,6 +143,54 @@ describe Restish::Repository do
         filtered = TestRepository.filter(parent_id: 2, extra: true)
         filtered.size.should eq 1
         filtered.first.id.should eq 3
+      end
+    end
+  end
+
+  context '#save' do
+    let(:test_adapter) { mock 'TestAdapter' }
+    let(:remote_model) { TestModel.new(name: 'Helga') }
+    let(:model) { TestModel.new }
+
+    context "with valid model" do
+      before do
+        TestRepository.should_receive(:adapter).and_return(test_adapter)
+        test_adapter.should_receive(:create).and_return(remote_model)
+      end
+      
+      it "creates not persisted record" do
+        result = TestRepository.save(model)
+        result.should eq true
+      end
+      
+      it "updates model attributes" do
+        TestRepository.save(model)
+        model.name.should eq 'Helga'
+      end
+    end
+
+    context "with invalid model" do
+      let(:error_messages) { { 'name' => ["can't be blank"], 'email' => ['has already been taken', 'is invalid'] } }
+      let(:response) { mock 'Response', status: 422, body: { 'errors' => error_messages } }
+      let(:model) { TestModel.new(name: '33') }
+
+      before do
+        TestRepository.should_receive(:adapter).and_return(test_adapter)
+        test_adapter.should_receive(:create).and_raise(Restish::Adapter::UnprocessableEntityError.new(response))
+      end
+
+      it "returns false" do
+        result = TestRepository.save(TestModel.new)
+        result.should eq false
+      end
+
+      it "populates errors" do
+        TestRepository.save(model)
+        model.errors.should_not be_blank
+        model.errors[:base].join(' ').should include('is invalid')
+        error_messages['name'].each do |message|
+          model.errors['name'].should include(message)
+        end
       end
     end
   end
