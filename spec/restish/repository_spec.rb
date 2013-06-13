@@ -81,7 +81,7 @@ describe Restish::Repository do
       it 'fetches the model from adapter' do
         TestRepository.should_receive(:adapter).with('test')
           .and_return test_adapter
-        test_adapter.should_receive(:find).with 123
+        test_adapter.should_receive(:find).with 123, {}
         TestRepository.find(123).should eq model
       end
     end
@@ -157,12 +157,12 @@ describe Restish::Repository do
         TestRepository.should_receive(:adapter).and_return(test_adapter)
         test_adapter.should_receive(:create).and_return(remote_model)
       end
-      
+
       it "creates not persisted record" do
         result = TestRepository.save(model)
         result.should eq true
       end
-      
+
       it "updates model attributes" do
         TestRepository.save(model)
         model.name.should eq 'Helga'

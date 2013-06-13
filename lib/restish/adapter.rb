@@ -14,7 +14,7 @@ module Restish
       # @param [Faraday::Response] response Data returned from the server.
       # @param [String] message Error message.
       def initialize(response, message = nil)
-        @response = response 
+        @response = response
         @message = message
       end
 
@@ -27,7 +27,7 @@ module Restish
 
     # Raised on 422 Unprocessable Entity.
     class UnprocessableEntityError < ResponseError
-      
+
       # Returns hash of error messages.
       # @return [Hash]
       def errors
@@ -40,7 +40,6 @@ module Restish
 
     def initialize(connection)
       @connection = connection
-      @meta = nil
     end
 
     # Fetches and materializes the record instance with the given ID.
@@ -62,7 +61,8 @@ module Restish
       url = options[:url] || url_for(:all)
       response = connection.get url
       collection = Collection.new(handle_and_unpack_response(response, 200))
-      collection.meta_params = @meta if @meta
+      meta = unpack_meta(response)
+      collection.meta_params = meta if meta
       collection
     end
 
@@ -111,7 +111,6 @@ module Restish
     # @return [Array<Object>, Object]
     def handle_and_unpack_response(response, handled_status)
       handle_response(response, handled_status) do
-        @meta = unpack_meta(response.body)
         unpack_attributes(response.body) do |attrs|
           materialize_model(attrs)
         end
@@ -180,10 +179,10 @@ module Restish
 
     # Unpacks metadata from response body hash.
     #
-    # @param [Hash] response_body
+    # @param [Hash] response
     # @return [Hash]
-    def unpack_meta(response_body)
-      response_body['meta'] if response_body.has_key?('meta')
+    def unpack_meta(response)
+      response.body['meta'] if response.body.has_key?('meta')
     end
 
   end
