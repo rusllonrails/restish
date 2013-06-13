@@ -41,12 +41,12 @@ describe Restish::AdapterSupport do
         adapter.conn.should eq connection
       end
 
-      it 'memoizes adapter between controllers' do
-        Faraday.stub(:new).and_return connection
-        adapter1 = controller.adapter(:test)
-        adapter2 = controller_2.adapter(:test)
-        adapter1.should eq adapter2
-      end
+      # it 'memoizes adapter between controllers' do
+      #   Faraday.stub(:new).and_return connection
+      #   adapter1 = controller.adapter(:test)
+      #   adapter2 = controller_2.adapter(:test)
+      #   adapter1.should eq adapter2
+      # end
     end
 
     context 'given nonexistent adapter name' do

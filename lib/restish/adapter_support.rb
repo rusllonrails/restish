@@ -13,13 +13,7 @@ module Restish
     # @param [String] name Adapter name.
     # @return [Adapter]
     def adapter(name)
-      if Restish.adapters[name]
-        Restish.adapters[name]
-      else
-        initialize_adapter(name).tap do |adapter|
-          Restish.adapters[name] = adapter
-        end
-      end
+      initialize_adapter(name)
     end
 
     protected
