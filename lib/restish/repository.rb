@@ -41,11 +41,11 @@ module Restish
     #
     # @param [String,Integer] id Model ID
     # @return [Model]
-    def find(id)
+    def find(id, options = {})
       if model = find_locally(id)
         model
       else
-        adapter(model_class).find(id)
+        adapter(model_class).find(id, options)
       end
     end
 
