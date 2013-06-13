@@ -152,18 +152,23 @@ describe Restish::Repository do
     let(:remote_model) { TestModel.new(name: 'Helga') }
     let(:model) { TestModel.new }
 
-    context "with valid model" do
-      before do
+    context 'with valid model' do
+      it 'creates not persisted record' do
         TestRepository.should_receive(:adapter).and_return(test_adapter)
         test_adapter.should_receive(:create).and_return(remote_model)
-      end
-
-      it "creates not persisted record" do
         result = TestRepository.save(model)
         result.should eq true
       end
 
-      it "updates model attributes" do
+      it 'do not create persisted record' do
+        model.id = 1
+        test_adapter.should_not_receive(:create)
+        TestRepository.save(model)
+      end
+
+      it 'updates model attributes' do
+        TestRepository.should_receive(:adapter).and_return(test_adapter)
+        test_adapter.should_receive(:create).and_return(remote_model)
         TestRepository.save(model)
         model.name.should eq 'Helga'
       end
