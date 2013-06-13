@@ -37,9 +37,4 @@ describe Restish::Model do
     TheTestModel.new.errors.should be_a(Restish::Errors)
   end
 
-  it "can be saved" do
-    model = TheTestModel.new
-    expect { model.save }.to change { model.persisted? }
-    model.save.should eq true
-  end
 end

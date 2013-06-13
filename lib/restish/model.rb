@@ -43,13 +43,6 @@ module Restish
 
     # Instance methods
 
-    # Saves a resource, currently only creating new records by a +POST+
-    # request. Delegates to an instance of +Restish::Repository+.
-    # @see Restish::Repository#save
-    def save
-      self.class.save(self)
-    end
-
     # Is the record persisted? This methods is required by ActiveModel.
     #
     # @return [true, false]
