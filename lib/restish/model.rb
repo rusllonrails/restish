@@ -56,5 +56,12 @@ module Restish
     def persisted?
       self[:id].present?
     end
+
+    # Returns +id+ of the record to use when constructing urls in Rails.
+    # @return [Fixnum]
+    def to_param
+      self[:id]
+    end
+
   end
 end

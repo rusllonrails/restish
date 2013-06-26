@@ -1,9 +1,9 @@
-require 'spec_helper'
+require "spec_helper"
 
 module TheTestModelRepository
   include Restish::Repository
   def foo
-    'bar'
+    "bar"
   end
 end
 
@@ -35,6 +35,10 @@ describe Restish::Model do
 
   it "contains error messages" do
     TheTestModel.new.errors.should be_a(Restish::Errors)
+  end
+
+  it "can be transformed to param" do
+    TheTestModel.new(id: 3).to_param.should eq 3
   end
 
   it "can be saved" do
