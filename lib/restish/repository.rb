@@ -66,11 +66,21 @@ module Restish
     # @param [Model] model An instance to save.
     # @return [Boolean] +true+ - success, +false+ - error.
     def save(model)
-      model.merge!(adapter(model_class).create(model)) unless model.persisted?
-      true
-    rescue Restish::Adapter::UnprocessableEntityError => e
-      model.errors.from_hash(e.errors)
-      false
+      handle_errors(model) do
+        model.merge!(adapter(model_class).create(model)) unless model.persisted?
+      end
+    end
+
+    # Updates a +model+ by making +PUT+ request to a remote service, and
+    # handles errors emitted by {Restish::Adapter}
+    # @see Restish::Adapter
+    #
+    # @param [Model] model An instance to update.
+    # @return [Boolean] +true+ - success, +false+ - error.
+    def update(model, params = {})
+      handle_errors(model) do
+        model.merge!(adapter(model_class).update(model, params))
+      end
     end
 
     # Filter all records with query.
@@ -93,5 +103,19 @@ module Restish
       model_name = name[/^(.*)Repository$/, 1]
       (model_name || name).underscore
     end
+
+    # Updates model.errors if Restish::Adapter::UnprocessableEntityError
+    # is raised.
+    # 
+    # @param [Model] model Model to populate.
+    # @return [Boolean]
+    def handle_errors(model, &blk)
+      blk.call()
+      true
+    rescue Restish::Adapter::UnprocessableEntityError => e
+      model.errors.from_hash(e.errors)
+      false
+    end
+
   end
 end

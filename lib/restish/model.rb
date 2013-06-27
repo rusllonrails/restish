@@ -50,17 +50,18 @@ module Restish
       self.class.save(self)
     end
 
+    # Updates a resource, making a +PATCH+ request. Delegates to an
+    # instance of {Restish::Repository}.
+    # @see Restish::Repository#update
+    def update_attributes(params = {})
+      self.class.update(self, params)
+    end
+
     # Is the record persisted? This methods is required by ActiveModel.
     #
     # @return [true, false]
     def persisted?
       self[:id].present?
-    end
-
-    # Returns +id+ of the record to use when constructing urls in Rails.
-    # @return [Fixnum]
-    def to_param
-      self[:id]
     end
 
   end

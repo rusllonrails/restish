@@ -38,6 +38,9 @@ module Restish
     # Raise on 401 Unauthorized.
     UnauthorizedError = Class.new(ResponseError)
 
+    # Raise on 404 Not Found.
+    NotFoundError = Class.new(ResponseError)
+
     def initialize(connection)
       @connection = connection
     end
@@ -73,6 +76,16 @@ module Restish
     def create(model)
       response = connection.post url_for(:all), model.to_json
       handle_and_unpack_response(response, 201)
+    end
+
+    # Updates existing model on the server.
+    #
+    # @param [Restish::Model] model Model to update.
+    # @param [Hash] updated_attributes New attributes.
+    # @return [Restish::Model]
+    def update(model, updated_attributes = {})
+      response = connection.put url_for(model.id), updated_attributes
+      handle_and_unpack_response(response, 200)
     end
 
     def post(id, action)
@@ -127,11 +140,13 @@ module Restish
         block.call(response)
       else
         case response.status
-        when 422
-          raise UnprocessableEntityError.new(response)
         when 401
           raise UnauthorizedError.new(response)
-        else
+        when 404
+          raise NotFoundError.new(response)
+        when 422
+          raise UnprocessableEntityError.new(response)
+       else
           raise "Server returned unhandled status #{response.status}"
         end
       end
