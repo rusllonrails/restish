@@ -50,7 +50,7 @@ module Restish
       self.class.save(self)
     end
 
-    # Updates a resource, making a +PATCH+ request. Delegates to an
+    # Updates a resource, making a +PUT+ request. Delegates to an
     # instance of {Restish::Repository}.
     # @see Restish::Repository#update
     def update_attributes(params = {})
