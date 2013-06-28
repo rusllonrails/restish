@@ -219,6 +219,12 @@ describe Restish::Repository do
         TestRepository.update(model, name: 'Olga')
         model.name.should eq 'Olga'
       end
+
+      it 'updates model' do
+        TestRepository.should_receive(:adapter).and_return(test_adapter)
+        test_adapter.should_receive(:update).and_return(remote_model)
+        TestRepository.update(model.merge(name: 'Olga'))
+      end
     end
 
     context "with invalid model" do
