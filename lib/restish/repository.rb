@@ -78,7 +78,6 @@ module Restish
     # @param [Model] model An instance to update.
     # @return [Boolean] +true+ - success, +false+ - error.
     def update(model, params = {})
-      params = params.merge(model) if params.empty?
       handle_errors(model) do
         model.merge!(adapter(model_class).update(model, params))
       end
