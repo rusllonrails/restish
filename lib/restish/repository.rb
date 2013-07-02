@@ -1,5 +1,5 @@
 module Restish
-  module Repository
+  class Repository
     include AdapterSupport
 
     mattr_accessor :repositories
@@ -16,6 +16,12 @@ module Restish
     # Callback invoked whenever Repository is extended into a class.
     def self.extended(base)
       repositories.push base
+    end
+
+    def self.for(model)
+      "#{model}Repository".constantize.new
+    rescue NameError
+      Repository.new
     end
 
 
@@ -100,7 +106,7 @@ module Restish
     protected
 
     def model_class
-      model_name = name[/^(.*)Repository$/, 1]
+      model_name = self.class.name[/^(.*)Repository$/, 1]
       (model_name || name).underscore
     end
 

@@ -1,100 +1,57 @@
 require 'spec_helper'
 require 'ostruct'
 
-class TestRepository
-  extend Restish::Repository
+class TestRepository < Restish::Repository
 end
 
-class TestModel < Restish::Model
+class Test < Restish::Model
 end
 
 describe Restish::Repository do
-  describe '.repository' do
-    it 'is initialized to array' do
-      Restish::Repository.repositories.should be_kind_of Array
-    end
-  end
+  let(:repository) { TestRepository.new }
 
-  describe '.extended' do
-    it 'pushes the class into repositories' do
-      Restish::Repository.repositories.should include TestRepository
-      Restish::Repository.repositories.should include TestModel
-    end
-  end
-
-  describe '.clear_cache' do
-    before do
-      @old_repositires = Restish::Repository.repositories
-    end
-
-    after do
-      Restish::Repository.repositories = @old_repositires
-    end
-
-    it 'pushes the class into repositories' do
-      repository1 = mock 'Repository', clear_cache: nil
-      repository2 = mock 'Repository', clear_cache: nil
-      repository1.should_receive :clear_cache
-      repository2.should_receive :clear_cache
-      Restish::Repository.repositories = [repository1, repository2]
-      Restish::Repository.clear_cache
-    end
-  end
-
-  describe '#clear_cache' do
-    it 'clears memoized value @all' do
-      TestRepository.instance_variable_set :@all, 'yeehaw'
-      TestRepository.clear_cache
-      TestRepository.instance_variable_get(:@all).should be_nil
+  describe '.for' do
+    it 'instantiates a repository for a model' do
+      Restish::Repository.for('Test').should be_kind_of(TestRepository)
     end
   end
 
   describe '#all' do
     let(:test_adapter) { mock 'TestAdapter', all: [] }
 
-    context 'included in repository' do
-      it 'fetches all models from adapter' do
-        TestRepository.should_receive(:adapter).with('test')
-          .and_return test_adapter
-        TestRepository.all.should eq []
-      end
-    end
-
-    context 'included in model' do
-      it 'resolves model name correctly' do
-        TestModel.should_receive(:adapter).with('test_model')
-          .and_return test_adapter
-        TestModel.all
-      end
+    it 'fetches all models from adapter' do
+      repository.should_receive(:adapter).with('test')
+        .and_return test_adapter
+      repository.all.should eq []
     end
   end
 
   describe '#find' do
     context 'given the model is not found locally' do
       before do
-        TestRepository.stub(:find_locally).and_return nil
+        repository.stub(:find_locally).and_return nil
       end
 
       let(:model)        { mock 'Model' }
       let(:test_adapter) { mock 'TestAdapter', find: model }
 
       it 'fetches the model from adapter' do
-        TestRepository.should_receive(:adapter).with('test')
+        repository.should_receive(:adapter).with('test')
           .and_return test_adapter
         test_adapter.should_receive(:find).with 123, {}
-        TestRepository.find(123).should eq model
+        repository.find(123).should eq model
       end
     end
 
     context 'given the model is found locally' do
       before do
-        TestRepository.stub(:find_locally).and_return model
+        repository.stub(:find_locally).and_return model
       end
 
       let(:model)        { mock 'Model' }
 
       it 'returns the local model' do
-        TestRepository.find(123).should eq model
+        repository.find(123).should eq model
       end
     end
   end
@@ -104,8 +61,8 @@ describe Restish::Repository do
       let(:model)        { mock 'Model', id: 123 }
 
       it 'it returns the model' do
-        TestRepository.instance_variable_set(:@all, [model])
-        TestRepository.find_locally(123).should eq model
+        repository.instance_variable_set(:@all, [model])
+        repository.find_locally(123).should eq model
       end
     end
 
@@ -113,8 +70,8 @@ describe Restish::Repository do
       let(:model)        { mock 'Model' }
 
       it 'it returns nil' do
-        TestRepository.instance_variable_set(:@all, [])
-        TestRepository.find_locally(123).should be_nil
+        repository.instance_variable_set(:@all, [])
+        repository.find_locally(123).should be_nil
       end
     end
   end
@@ -128,19 +85,19 @@ describe Restish::Repository do
     end
 
     before do
-      TestRepository.stub(:all).and_return categories
+      repository.stub(:all).and_return categories
     end
 
     context 'query with 1 key-value' do
       it 'filters all models from adapter' do
-        TestRepository.filter(parent_id: 1).size.should eq 1
-        TestRepository.filter(parent_id: 1).first.id.should eq 2
+        repository.filter(parent_id: 1).size.should eq 1
+        repository.filter(parent_id: 1).first.id.should eq 2
       end
     end
 
     context 'query with 2 key-values' do
       it 'filters all models from adapter using AND logic' do
-        filtered = TestRepository.filter(parent_id: 2, extra: true)
+        filtered = repository.filter(parent_id: 2, extra: true)
         filtered.size.should eq 1
         filtered.first.id.should eq 3
       end
@@ -149,27 +106,27 @@ describe Restish::Repository do
 
   context '#save' do
     let(:test_adapter) { mock 'TestAdapter' }
-    let(:remote_model) { TestModel.new(name: 'Helga') }
-    let(:model) { TestModel.new }
+    let(:remote_model) { Test.new(name: 'Helga') }
+    let(:model) { Test.new }
 
     context 'with valid model' do
       it 'creates not persisted record' do
-        TestRepository.should_receive(:adapter).and_return(test_adapter)
+        repository.should_receive(:adapter).and_return(test_adapter)
         test_adapter.should_receive(:create).and_return(remote_model)
-        result = TestRepository.save(model)
+        result = repository.save(model)
         result.should eq true
       end
 
       it 'do not create persisted record' do
         model.id = 1
         test_adapter.should_not_receive(:create)
-        TestRepository.save(model)
+        repository.save(model)
       end
 
       it 'updates model attributes' do
-        TestRepository.should_receive(:adapter).and_return(test_adapter)
+        repository.should_receive(:adapter).and_return(test_adapter)
         test_adapter.should_receive(:create).and_return(remote_model)
-        TestRepository.save(model)
+        repository.save(model)
         model.name.should eq 'Helga'
       end
     end
@@ -177,20 +134,20 @@ describe Restish::Repository do
     context "with invalid model" do
       let(:error_messages) { { 'name' => ["can't be blank"], 'email' => ['has already been taken', 'is invalid'] } }
       let(:response) { mock 'Response', status: 422, body: { 'errors' => error_messages } }
-      let(:model) { TestModel.new(name: '33') }
+      let(:model) { Test.new(name: '33') }
 
       before do
-        TestRepository.should_receive(:adapter).and_return(test_adapter)
+        repository.should_receive(:adapter).and_return(test_adapter)
         test_adapter.should_receive(:create).and_raise(Restish::Adapter::UnprocessableEntityError.new(response))
       end
 
       it "returns false" do
-        result = TestRepository.save(TestModel.new)
+        result = repository.save(Test.new)
         result.should eq false
       end
 
       it "populates errors" do
-        TestRepository.save(model)
+        repository.save(model)
         model.errors.should_not be_blank
         model.errors[:base].join(' ').should include('is invalid')
         error_messages['name'].each do |message|
@@ -202,21 +159,21 @@ describe Restish::Repository do
 
   context '#update' do
     let(:test_adapter) { mock 'TestAdapter' }
-    let(:remote_model) { TestModel.new(id: 3, name: 'Olga') }
-    let(:model) { TestModel.new(id: 3, name: 'Helga') }
+    let(:remote_model) { Test.new(id: 3, name: 'Olga') }
+    let(:model) { Test.new(id: 3, name: 'Helga') }
 
     context 'with valid model' do
       it 'returns status' do
-        TestRepository.should_receive(:adapter).and_return(test_adapter)
+        repository.should_receive(:adapter).and_return(test_adapter)
         test_adapter.should_receive(:update).and_return(remote_model)
-        result = TestRepository.update(model, name: 'Olga')
+        result = repository.update(model, name: 'Olga')
         result.should eq true
       end
 
       it 'updates model attributes' do
-        TestRepository.should_receive(:adapter).and_return(test_adapter)
+        repository.should_receive(:adapter).and_return(test_adapter)
         test_adapter.should_receive(:update).and_return(remote_model)
-        TestRepository.update(model, name: 'Olga')
+        repository.update(model, name: 'Olga')
         model.name.should eq 'Olga'
       end
 
@@ -225,20 +182,20 @@ describe Restish::Repository do
     context "with invalid model" do
       let(:error_messages) { { 'name' => ["can't be blank"], 'email' => ['has already been taken', 'is invalid'] } }
       let(:response) { mock 'Response', status: 422, body: { 'errors' => error_messages } }
-      let(:model) { TestModel.new(id: 33, name: '33') }
+      let(:model) { Test.new(id: 33, name: '33') }
 
       before do
-        TestRepository.should_receive(:adapter).and_return(test_adapter)
+        repository.should_receive(:adapter).and_return(test_adapter)
         test_adapter.should_receive(:update).and_raise(Restish::Adapter::UnprocessableEntityError.new(response))
       end
 
       it "returns false" do
-        result = TestRepository.update(model, name: '', email: 'olga@example.com')
+        result = repository.update(model, name: '', email: 'olga@example.com')
         result.should eq false
       end
 
       it "populates errors" do
-        TestRepository.update(model, name: '', email: 'olga@example.com')
+        repository.update(model, name: '', email: 'olga@example.com')
         model.errors.should_not be_blank
         model.errors[:base].join(' ').should include('is invalid')
         error_messages['name'].each do |message|

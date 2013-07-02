@@ -37,7 +37,8 @@ module Restish
       rescue NameError => e
         repository_class = Restish::Repository
       ensure
-        base.extend repository_class
+        # TODO
+        # base.extend repository_class
       end
     end
 
