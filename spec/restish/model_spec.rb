@@ -12,18 +12,24 @@ class TheTestModelAdapter < Restish::Adapter
     model
   end
 
-  def update(model, attributes = {})
-    TheTestModel.new(model.merge(attributes))
+  def update(model)
+    TheTestModel.new(model)
   end
 end
 
 class TheTestModel < Restish::Model
+  attributes :name, :company
 end
 
 class DaTestModel < Restish::Model
 end
 
 describe Restish::Model do
+  it 'set up repository on initialization' do
+    repo = TheTestModel.new.instance_eval { @_repository }
+    repo.should be_kind_of(TheTestModelRepository)
+  end
+
   it 'contains error messages' do
     TheTestModel.new.errors.should be_a(Restish::Errors)
   end
@@ -32,15 +38,40 @@ describe Restish::Model do
     TheTestModel.new(id: 3).to_param.should eq 'id=3'
   end
 
-  its 'attributes can be updated' do
-    model = TheTestModel.new(id: 3, name: 'Helga')
-    model.update_attributes(name: 'Olga').should eq true
-    model.name.should eq 'Olga'
+  context '.attributes' do
+    it 'makes accessible list of attributes' do
+      TheTestModel.attributes.should include(:name, :company)
+    end
+
+    it 'decorate accessors for ActiveModel::Dirty' do
+      model = TheTestModel.new
+      model.name = 'Bob'
+      model.changed.should include('name')
+    end
   end
 
-  it 'can be saved' do
-    model = TheTestModel.new
-    expect { model.save }.to change { model.persisted? }
-    model.save.should eq true
+  context '#update_attributes' do
+    let(:model) { TheTestModel.new(id: 3, name: 'Helga') }
+
+    it 'updates attributes' do
+      model.update_attributes(name: 'Olga').should eq true
+      model.name.should eq 'Olga'
+    end
+
+    it 'calls a repository for saving' do
+      repository = model.instance_variable_get(:@_repository)
+      repository.should_receive(:save)
+      model.update_attributes(name: 'Olga')
+    end
   end
+
+  context '#save' do
+    it 'calls a repository' do
+      model = TheTestModel.new
+      repository = model.instance_variable_get(:@_repository)
+      repository.should_receive(:save)
+      model.save
+    end
+  end
+
 end

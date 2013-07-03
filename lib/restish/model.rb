@@ -1,12 +1,14 @@
 require 'active_model/naming'
+require 'active_model/dirty'
 require 'hashie/mash'
-require 'restish/repository'
+require 'restish/repository_wrapper'
 require 'restish/errors'
 
 module Restish
   # This is the base class for all models.
   class Model < Hashie::Mash
     extend ActiveModel::Naming
+    include ActiveModel::Dirty
 
     attr_accessor :errors
 
@@ -21,7 +23,8 @@ module Restish
     # @return [Model]
     def initialize(source_hash = nil, default = nil, &blk)
       super
-      @errors = Restish::Errors.new(self)
+      @errors = Errors.new(self)
+      @_repository = Repository.for(self.class)
     end
 
     # Class methods
@@ -31,14 +34,27 @@ module Restish
     # Tries to resolve an appropriate repository class and extends it into the
     # subclass.
     def self.inherited(base)
-      begin
-        repository_class = "#{base}Repository".constantize
-        Restish::Repository.repositories.push base
-      rescue NameError => e
-        repository_class = Restish::Repository
-      ensure
-        # TODO
-        # base.extend repository_class
+      base.extend RepositoryWrapper
+    end
+
+    # TODO Write docs.
+    def self.attributes(*attrs)
+      if attrs.empty?
+        return const_get('ATTRIBUTES') || []
+      end
+
+      const_set('ATTRIBUTES', attrs)
+
+      define_attribute_methods attrs
+      attrs.each do |attr|
+        define_method(attr) do
+          self[attr]
+        end
+
+        define_method("#{attr}=") do |value|
+          send("#{attr}_will_change!") unless value == self[attr]
+          self[attr] = value
+        end
       end
     end
 
@@ -47,15 +63,17 @@ module Restish
     # Saves a resource, currently only creating new records by a +POST+
     # request. Delegates to an instance of +Restish::Repository+.
     # @see Restish::Repository#save
+    # @return [Boolean]
     def save
-      self.class.save(self)
+      @_repository.save(self)
     end
 
     # Updates a resource, making a +PUT+ request. Delegates to an
     # instance of {Restish::Repository}.
     # @see Restish::Repository#update
-    def update_attributes(params = {})
-      self.class.update(self, params)
+    def update_attributes(attrs = {})
+      merge!(attrs)
+      @_repository.save(self)
     end
 
     # Is the record persisted? This methods is required by ActiveModel.

@@ -1,10 +1,14 @@
 require 'spec_helper'
 require 'ostruct'
 
+class TestAdapter < Restish::Adapter
+end
+
 class TestRepository < Restish::Repository
 end
 
 class Test < Restish::Model
+  attributes :id, :name
 end
 
 describe Restish::Repository do
@@ -107,7 +111,7 @@ describe Restish::Repository do
   context '#save' do
     let(:test_adapter) { mock 'TestAdapter' }
     let(:remote_model) { Test.new(name: 'Helga') }
-    let(:model) { Test.new }
+    let(:model) { Test.new}
 
     context 'with valid model' do
       it 'creates not persisted record' do
@@ -117,9 +121,19 @@ describe Restish::Repository do
         result.should eq true
       end
 
-      it 'do not create persisted record' do
+      it 'updates persisted and changed record' do
+        repository.should_receive(:adapter).and_return(test_adapter)
         model.id = 1
-        test_adapter.should_not_receive(:create)
+        model.name = 'John'
+        test_adapter.should_receive(:update).and_return(model)
+        repository.save(model)
+      end
+       
+      it 'does nothing to persisted and not changed record' do
+        model.id = 1
+        model.changed_attributes.clear
+        test_adapter.should_not_receive(:save)
+        test_adapter.should_not_receive(:update)
         repository.save(model)
       end
 
@@ -148,54 +162,6 @@ describe Restish::Repository do
 
       it "populates errors" do
         repository.save(model)
-        model.errors.should_not be_blank
-        model.errors[:base].join(' ').should include('is invalid')
-        error_messages['name'].each do |message|
-          model.errors['name'].should include(message)
-        end
-      end
-    end
-  end
-
-  context '#update' do
-    let(:test_adapter) { mock 'TestAdapter' }
-    let(:remote_model) { Test.new(id: 3, name: 'Olga') }
-    let(:model) { Test.new(id: 3, name: 'Helga') }
-
-    context 'with valid model' do
-      it 'returns status' do
-        repository.should_receive(:adapter).and_return(test_adapter)
-        test_adapter.should_receive(:update).and_return(remote_model)
-        result = repository.update(model, name: 'Olga')
-        result.should eq true
-      end
-
-      it 'updates model attributes' do
-        repository.should_receive(:adapter).and_return(test_adapter)
-        test_adapter.should_receive(:update).and_return(remote_model)
-        repository.update(model, name: 'Olga')
-        model.name.should eq 'Olga'
-      end
-
-    end
-
-    context "with invalid model" do
-      let(:error_messages) { { 'name' => ["can't be blank"], 'email' => ['has already been taken', 'is invalid'] } }
-      let(:response) { mock 'Response', status: 422, body: { 'errors' => error_messages } }
-      let(:model) { Test.new(id: 33, name: '33') }
-
-      before do
-        repository.should_receive(:adapter).and_return(test_adapter)
-        test_adapter.should_receive(:update).and_raise(Restish::Adapter::UnprocessableEntityError.new(response))
-      end
-
-      it "returns false" do
-        result = repository.update(model, name: '', email: 'olga@example.com')
-        result.should eq false
-      end
-
-      it "populates errors" do
-        repository.update(model, name: '', email: 'olga@example.com')
         model.errors.should_not be_blank
         model.errors[:base].join(' ').should include('is invalid')
         error_messages['name'].each do |message|
