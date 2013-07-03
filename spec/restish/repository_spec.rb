@@ -4,14 +4,18 @@ require 'ostruct'
 class TestAdapter < Restish::Adapter
 end
 
-class TestRepository < Restish::Repository
+class TestRepository < Restish::Repository::Base
+end
+
+module SpecRepository
+  include Restish::Repository
 end
 
 class Test < Restish::Model
   attributes :id, :name
 end
 
-describe Restish::Repository do
+describe Restish::Repository::Base do
   let(:repository) { TestRepository.new }
 
   describe '.for' do

@@ -37,7 +37,9 @@ module Restish
       base.extend RepositoryWrapper
     end
 
-    # TODO Write docs.
+    # Saves a list of attributes, and initiates change tracking.
+    # @see ActiveModel::Dirty
+    # @param [*Symbol] attrs Names of attributes to track.
     def self.attributes(*attrs)
       if attrs.empty?
         return const_get('ATTRIBUTES') || []
@@ -60,8 +62,8 @@ module Restish
 
     # Instance methods
 
-    # Saves a resource, currently only creating new records by a +POST+
-    # request. Delegates to an instance of +Restish::Repository+.
+    # Saves a resource by doing +POST+ or +PUT+ request.
+    # Delegates to an instance of +Restish::Repository+.
     # @see Restish::Repository#save
     # @return [Boolean]
     def save
