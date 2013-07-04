@@ -147,6 +147,21 @@ describe Restish::Repository do
     end
   end
 
+  context '#save_or_update' do
+    let(:model) { TestModel.new }
+
+    it 'calls #save if model is not persisted' do
+      model.class.should_receive(:save)
+      model.save
+    end
+
+    it 'calls #update if model is persisted' do
+      model.id = 1
+      model.class.should_receive(:update)
+      model.save
+    end
+  end
+
   context '#save' do
     let(:test_adapter) { mock 'TestAdapter' }
     let(:remote_model) { TestModel.new(name: 'Helga') }

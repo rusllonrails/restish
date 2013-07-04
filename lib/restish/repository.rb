@@ -71,6 +71,14 @@ module Restish
       end
     end
 
+    def save_or_update(model)
+      if model.persisted?
+        update(model)
+      else
+        save(model)
+      end
+    end
+
     # Updates a +model+ by making +PUT+ request to a remote service, and
     # handles errors emitted by {Restish::Adapter}
     # @see Restish::Adapter

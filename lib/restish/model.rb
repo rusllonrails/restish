@@ -43,18 +43,20 @@ module Restish
 
     # Instance methods
 
-    # Saves a resource, currently only creating new records by a +POST+
-    # request. Delegates to an instance of +Restish::Repository+.
+    # Saves a resource, creating a new record by a +POST+
+    # request or updating the existing record by a +PUT+ request.
+    # Delegates to an instance of +Restish::Repository+.
     # @see Restish::Repository#save
     def save
-      self.class.save(self)
+      self.class.save_or_update(self)
     end
 
-    # Updates a resource, making a +PATCH+ request. Delegates to an
+    # Updates a resource. Delegates to an
     # instance of {Restish::Repository}.
-    # @see Restish::Repository#update
+    # @see Restish::Repository#save_or_update
     def update_attributes(params = {})
-      self.class.update(self, params)
+      self.merge!(params)
+      self.class.save_or_update(self)
     end
 
     # Is the record persisted? This methods is required by ActiveModel.
