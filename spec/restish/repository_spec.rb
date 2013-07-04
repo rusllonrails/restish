@@ -224,15 +224,8 @@ describe Restish::Repository do
       it 'returns status' do
         TestRepository.should_receive(:adapter).and_return(test_adapter)
         test_adapter.should_receive(:update).and_return(remote_model)
-        result = TestRepository.update(model, name: 'Olga')
+        result = TestRepository.update(model)
         result.should eq true
-      end
-
-      it 'updates model attributes' do
-        TestRepository.should_receive(:adapter).and_return(test_adapter)
-        test_adapter.should_receive(:update).and_return(remote_model)
-        TestRepository.update(model, name: 'Olga')
-        model.name.should eq 'Olga'
       end
     end
 
@@ -247,12 +240,12 @@ describe Restish::Repository do
       end
 
       it "returns false" do
-        result = TestRepository.update(model, name: '', email: 'olga@example.com')
+        result = TestRepository.update(model)
         result.should eq false
       end
 
       it "populates errors" do
-        TestRepository.update(model, name: '', email: 'olga@example.com')
+        TestRepository.update(model)
         model.errors.should_not be_blank
         model.errors[:base].join(' ').should include('is invalid')
         error_messages['name'].each do |message|

@@ -127,25 +127,24 @@ describe Restish::Adapter do
 
   describe '#update' do
     let(:json)  { { 'foobar' => { 'name' => 'Da name', 'id' => 3 } } }
-    let(:update_json)  { { 'foobar' => { 'name' => 'John Doe', 'id' => 3 } } }
     let(:model) { mock 'Model', json['foobar'].merge(to_json: json) }
-    let(:response) { mock 'Response', body: update_json, status: 200 }
+    let(:response) { mock 'Response', body: json, status: 200 }
     let(:connection) { mock 'Connection', put: response  }
     let(:foobar_adapter) { FoobarAdapter.new(connection) }
 
     it 'posts serialized JSON over HTTP' do
-      connection.should_receive(:put).with(/foobars\/3/, update_json)
-      foobar_adapter.update(model, update_json)
+      connection.should_receive(:put).with(/foobars\/3/, json)
+      foobar_adapter.update(model)
     end
 
     context '201 Created response' do
       it 'unpacks attributes from response' do
-        Foobar.should_receive(:new).with('name' => 'John Doe', 'id' => 3)
-        foobar_adapter.update(model, update_json)
+        Foobar.should_receive(:new).with(json['foobar'])
+        foobar_adapter.update(model)
       end
 
       it 'returns updated model' do
-        updated_model = foobar_adapter.update(model, update_json)
+        updated_model = foobar_adapter.update(model)
         updated_model.size.should eq 2
         updated_model.should be_kind_of Foobar
         updated_model.should_not eq model
@@ -153,16 +152,16 @@ describe Restish::Adapter do
     end
 
     context '422 Unprocessable Entity response' do
-      let(:response) { mock 'Response', body: update_json, status: 422 }
+      let(:response) { mock 'Response', body: json, status: 422 }
       it 'raises an exception' do
-        expect { foobar_adapter.update(model, update_json) }.to raise_error(Restish::Adapter::UnprocessableEntityError)
+        expect { foobar_adapter.update(model) }.to raise_error(Restish::Adapter::UnprocessableEntityError)
       end
     end
 
     context '404 Not Found response' do
       let(:response) { mock 'Response', status: 404 }
       it 'raises an exception' do
-        expect { foobar_adapter.update(model, update_json) }.to raise_error(Restish::Adapter::NotFoundError)
+        expect { foobar_adapter.update(model) }.to raise_error(Restish::Adapter::NotFoundError)
       end
     end
 

@@ -81,10 +81,9 @@ module Restish
     # Updates existing model on the server.
     #
     # @param [Restish::Model] model Model to update.
-    # @param [Hash] updated_attributes New attributes.
     # @return [Restish::Model]
-    def update(model, updated_attributes = {})
-      response = connection.put url_for(model.id), updated_attributes
+    def update(model)
+      response = connection.put url_for(model.id), model.to_json
       handle_and_unpack_response(response, 200)
     end
 
